@@ -32,13 +32,13 @@ const HOST = process.env.HOST || "localhost";
 
 // TODO CRON SCHEDULER
   //2 minuti
-cron.schedule("*/2 * * * *", async () => {
- console.log("Inizio processo ETL");
+//cron.schedule("*/2 * * * *", async () => {
+/*  console.log("Inizio processo ETL");
 
   const data = await fetchData({'nike': 'nike'});
   console.log('data :>> ', data?.data);
   console.log("Processo ETL completato");
-});
+}); */
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');

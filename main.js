@@ -8,7 +8,9 @@ const piscina = new Piscina({
 //run task contemporaneamente
 (async function () {
   const result = await Promise.all([
+    //primo worker
     piscina.run({ a: 4, b: 6 }, { name: "add" }),
+     //secondo worker in coda
     piscina.run({ a: 4, b: 6 }, { name: "multiply" }),
     piscina.run({ a: 4, b: 6 }, { name: "multiply100" })
   ]);

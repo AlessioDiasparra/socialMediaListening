@@ -1,12 +1,11 @@
 import axios from "axios";
 
-async function fetchData(event){
-  const TOKEN_IG =
-    "EAAEkggfDZAdEBAMg1CsGrTksylQGGw2vGl5rJZBRToT3Dhlk5BoiY9tcOZAAYoEoY9ZBvN0AZAYO7up3EZBF0fZCNOZAQFfMYH3WSHxPCTR1nIgyjYgeSrgS7wJQQjb7AaAZB1yK4HDmkH9hT0TDHRBa7JdZAevherrtlxGH0LnDezlBfP1fx1jVsKrtCD19VHUK6K63DTW0VvCILkQ6QpT9UmUQFUWhgH0z2hW9p4tvM1QoueZCkZA9ZAjI4HTTOaeJ8dcqB9ZBIvrTc0D4rQRkDbThu7";
+async function fetchData(event) {
+  const TOKEN_IG = "EAAEkggfDZAdEBAPc7SOmPXAQFRR9zk1yROdvCZBdZB2ZBOozFS0Aw8h2d78hYlVRFJrrcCYIzXhTDrrJaIKjFebBkwi3efkAbGSZCOfLM1JP2fldRnwgJXwy1R8U98jsStyoU03WA7wKBxAAcokdoaIeHcTJCZChEkfsVgVTzizY5ZBT5Pl9UQgCP5mDkXytdjYHoZBzTFheBSBWriGKuqOLjSm9n4rGp4f6FbErsZBFJ3UtnVUXt4s0qjFYdXQEpVK6WG4Ku7GsJUGXwWTK1ZCJJ8";
   const USER_ID = "17841445473312638";
   const FIELDS = "caption,media_type,like_count,comments_count,permalink,timestamp";
   const ACCESS_TOKEN =
-    "EAAEkggfDZAdEBALGkAS99U9F3qZBiZCeamYIMaZAmzKwXAo6bLdTbDvYmfnNKGSZBnRaEufNcTJa7KbpttxStYRKT9bJlH0XqpJ38yjXmfd6P1ZBUWcyje9ZAbByZCkHpl0362wlp1pfmZBowvaBJQQSLa6za1Rrl1hn6nvmExMvJLyTuEEBmW0kVPZBVTQD4nZCkQ8IUciEEMFQApkqmMqSxlYtKYtE0qNIkmVijKOiZCrzLgTAut3QdKwL";
+    "EAAEkggfDZAdEBALdKjnHwMlr4IRZAx474wERFmgIEM0bCCaZCuhZB7SDPb31tP3oBuLsSoULQiS69tFFLJp0Q59qJbvvpp37ZA5bdDTIBG3GeZBxFGOlpRMMUJDyHoFgLApz47e4pq5RRPt1B4GR1kVd4wnSBEIaWCGpPNmzMGnGrHy9eKERCX";
   const BASE_REQUEST_FB = "https://graph.facebook.com/v14.0/";
   const config = {
     headers: {
@@ -26,18 +25,16 @@ async function fetchData(event){
         const idHashtag = data[0]?.id;
         if (idHashtag) {
           const requestPostHashtagUrl = `${BASE_REQUEST_FB}${idHashtag}/recent_media?user_id=${USER_ID}&fields=${FIELDS}&access_token=${ACCESS_TOKEN}`;
-          const response = await axios.get(requestPostHashtagUrl);
-
+          const response = await axios.get(requestPostHashtagUrl, config);
           //prossima pag
           let nextPage = response?.data?.paging?.next;
           //200 risultati dalla risposta iniziale
-          const mergedResults = response?.data?.data.slice(0, 200);
+          let mergedResults = response?.data?.data.slice(0, 200);
           //chiamare le pagine successive 
           while (nextPage && mergedResults.length < 200) {
             const nextPageResponse = await axios.get(nextPage);
             const nextPageData = nextPageResponse?.data?.data;
             mergedResults.push(...nextPageData.slice(0, 200 - mergedResults.length));
-            nextPage = nextPageResponse?.data?.paging?.next;
           }
           //risultati uniti
           return mergedResults;
@@ -71,7 +68,6 @@ async function fetchData(event){
       response.data[hashtagsInput[i]].posts = mappedResults;
       response.data[hashtagsInput[i]].count_posts = mappedResults.length;
     }
-    console.log('response :>> ', response);
     return response;
   } catch (error) {
     const response = {
@@ -80,5 +76,6 @@ async function fetchData(event){
     };
     return response;
   }
-}
+};
+
 export default fetchData;

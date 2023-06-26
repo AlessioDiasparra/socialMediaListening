@@ -2,55 +2,64 @@ import express from 'express';
 import cron from "node-cron";
 import fetchData from './fetchData.js';
 import cors from 'cors'
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import path from 'path';
+import http from 'http'
 
-const uri = "mongodb+srv://alexdias:mGT1t7fgPP3cTDBv@cluster0.o4o10kx.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://alexdias:alexdias@cluster0.o4o10kx.mongodb.net/?retryWrites=true&w=majority"
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
+const client = new MongoClient(uri, {useUnifiedTopology: true});
+
+/* async function run() {
+  try {
+    await client.connect();
+    const database = client.db("sample_weatherdata");
+    const data = database.collection("data");
+  } finally {
+    await client.close();
   }
-});
-
-//client.connect();
-//const database = client.db('dbname')
+} */
 
 const app = express();
-/* app.use(cors());
-app.use(express.json()); */
+app.use(cors());
+app.use(express.json());
+//questo fa la build al client
 app.use(express.static('client/build'));
 
-const port = process.env.PORT || 3001; // Puoi modificare la porta se necessario
+const PORT = process.env.PORT || 3001; // Puoi modificare la porta se necessario
+const HOST = process.env.HOST || "localhost"; 
+//const router = express.Router();
 
-app.get("/", (req, res) => {
-  res.send('Hello World!')
+// TODO CRON SCHEDULER
   //2 minuti
-  cron.schedule("*/2 * * * *", async () => {
-    console.log("Inizio processo ETL");
-    //TODO LEGGERE LE ACQUISIZIONI
+cron.schedule("*/2 * * * *", async () => {
+ console.log("Inizio processo ETL");
 
-    //TODO LOAD
-    const data = await fetchData({'nike': 'nike'});
-   
-    res.send(JSON.stringify(data))
-   
-    console.log("Processo ETL completato");
-  });
+  const data = await fetchData({'nike': 'nike'});
+  console.log('data :>> ', data?.data);
+  console.log("Processo ETL completato");
+});
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
+app.get("/", async(req, res) => {
+  res.json({ message: "Ciao dal  server!" });
 });
 
 
 app.get("/api", (req, res) => {
-  res.json({ message: "Ciao dal  server!" });
+  res.json({ message: "Ciao dal  server! route api" });
 });
 
 // All other GET requests not handled before will return our React app
-app.get('*', (req, res) => {
+/* app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
-});
+}); */
 
-app.listen(port, () =>
-  console.log('api running!'),
+app.listen(PORT, HOST, () =>
+  console.log(`Server running su  ${HOST}:${PORT}`),
 ); 

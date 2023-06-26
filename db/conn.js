@@ -1,16 +1,17 @@
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 
-const connectionString = process.env.ATLAS_URI || "";
+const username = "alexdias";
+const password = "alexdias";
+const cluster = "cluster0.o4o10kx";
+const dbname = "instagram";
+ //connessione a db
+mongoose.connect(
+  `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`, 
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  }
+);
 
-const client = new MongoClient(connectionString);
-
-let conn;
-try {
-  conn = await client.connect();
-} catch(e) {
-  console.error(e);
-}
-
-let db = conn.db("sample_training");
-
-export default db;
+const db = mongoose.connection;
+export {db};

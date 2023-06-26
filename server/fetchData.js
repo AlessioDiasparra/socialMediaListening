@@ -1,11 +1,11 @@
 import axios from "axios";
 
 async function fetchData(event) {
-  const TOKEN_IG = "EAAEkggfDZAdEBAPc7SOmPXAQFRR9zk1yROdvCZBdZB2ZBOozFS0Aw8h2d78hYlVRFJrrcCYIzXhTDrrJaIKjFebBkwi3efkAbGSZCOfLM1JP2fldRnwgJXwy1R8U98jsStyoU03WA7wKBxAAcokdoaIeHcTJCZChEkfsVgVTzizY5ZBT5Pl9UQgCP5mDkXytdjYHoZBzTFheBSBWriGKuqOLjSm9n4rGp4f6FbErsZBFJ3UtnVUXt4s0qjFYdXQEpVK6WG4Ku7GsJUGXwWTK1ZCJJ8";
+  const TOKEN_IG = "EAAEkggfDZAdEBAB7t1W8ciqd5Rckz6AFbGWENOIW8D1iPyqwljeUtEKtMkSDZCoIqkdOZCtZCuE89kgjakI4JepGSqmWOGmB7ERX6NWvhdW67VWwsQZA32kFvSLlXJSZCSakpkold3BWplgVZCitH1sYZB25YgtyUYZAwv34dOB2mY04w7LhIlaWLj4QlspnA8ho5dzyghoZC8LjIgYCr0ocgUr3yRtRbNcyKyN7BtQPA12n4ZB5kejFWCfplYTW3ysfg9hcTCr3mS49DPvenIKszlT";
   const USER_ID = "17841445473312638";
   const FIELDS = "caption,media_type,like_count,comments_count,permalink,timestamp";
   const ACCESS_TOKEN =
-    "EAAEkggfDZAdEBALdKjnHwMlr4IRZAx474wERFmgIEM0bCCaZCuhZB7SDPb31tP3oBuLsSoULQiS69tFFLJp0Q59qJbvvpp37ZA5bdDTIBG3GeZBxFGOlpRMMUJDyHoFgLApz47e4pq5RRPt1B4GR1kVd4wnSBEIaWCGpPNmzMGnGrHy9eKERCX";
+    "EAAEkggfDZAdEBALe05vHh3J9JZBFMqk1dh6SUhSNZARvZCSPSxZCWNJt2njDgZCAZCykOLt8Ax4Cm1CXfjVzVLtgX7hOLacyDigUJyHCsgU5jCdQRnZCcuX7h3UNzLB9r5BviOLCQLiVGaGg5Vqk9ZAvICIAm2ElTkSvVlj0dSiYWkYLrw6LcnUbk";
   const BASE_REQUEST_FB = "https://graph.facebook.com/v14.0/";
   const config = {
     headers: {
@@ -31,13 +31,18 @@ async function fetchData(event) {
           //200 risultati dalla risposta iniziale
           let mergedResults = response?.data?.data.slice(0, 200);
           //chiamare le pagine successive 
-          while (nextPage && mergedResults.length < 200) {
+          while (nextPage && mergedResults.length < limit) {
             const nextPageResponse = await axios.get(nextPage);
             const nextPageData = nextPageResponse?.data?.data;
-            mergedResults.push(...nextPageData.slice(0, 200 - mergedResults.length));
+            mergedResults.push(...nextPageData);
+
+            if (mergedResults.length >= limit || !nextPage || response?.data?.data.length === 0) {
+              break;
+            }
+            nextPage = nextPageResponse?.data?.paging?.next;
           }
-          //risultati uniti
-          return mergedResults;
+        //risultati uniti
+        return mergedResults.slice(0,limit);
         } else {
           return [];
         }

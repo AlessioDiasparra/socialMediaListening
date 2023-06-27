@@ -1,12 +1,9 @@
 import mongoose from "mongoose";
+import { USERNAME, PASSWORD, CLUSTER, DATABASE } from "../constant.js";
 
-const username = "alexdias";
-const password = "alexdias";
-const cluster = "cluster0.o4o10kx";
-const dbname = "instagram";
  //connessione a db
 mongoose.connect(
-  `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`, 
+  `mongodb+srv://${USERNAME}:${PASSWORD}@${CLUSTER}.mongodb.net/${DATABASE}?retryWrites=true&w=majority`, 
   {
     useNewUrlParser: true,
     useUnifiedTopology: true

@@ -1,71 +1,82 @@
-import express from 'express';
+import express from "express";
 import cron from "node-cron";
-import fetchData from './fetchData.js';
-import cors from 'cors'
-/* import path from 'path';
-import http from 'http'
+import fetchData from "../source/api/fetchData.js";
+import cors from "cors";
+import { dirname, join } from "path";
+/* import http from 'http'
 import { fileURLToPath } from 'url'; */
-import { db } from '../db/conn.js';
-import { PostHashtag } from '../models/hashtagModel.js';
+import { fileURLToPath } from "url";
+import { db } from "../db/conn.js";
+import { PostHashtag } from "../models/hashtagModel.js";
+import hashtagRouter from "../routes/hashtagRoutes.js";
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+// Abilita CORS
 app.use(cors());
+// Analizza i corpi delle richieste JSON
 app.use(express.json());
-//questo fa la build al client
-app.use(express.static('client/build'));
+
+// Serve i file statici dalla cartella build di React
+app.use(express.static(join(__dirname, "../client/build")));
 
 const PORT = process.env.PORT || 3001; // Puoi modificare la porta se necessario
-const HOST = process.env.HOST || "localhost"; 
-//const router = express.Router();
+const HOST = process.env.HOST || "localhost";
 
+// CONNESSIONE AD ATLAS
 db.on("error", console.error.bind(console, "errore di connessione a db: "));
 db.once("open", function () {
   console.log("connesso ad atlas");
 });
 
 // TODO CRON SCHEDULER
-  //2 minuti
+//2 minuti
 //cron.schedule("*/2 * * * *", async () => {
-/*  console.log("Inizio processo ETL");
+/*  console.log("Inizio processo CRON e LOAD SU DATABASE");
 
   const data = await fetchData({'nike': 'nike'});
-  console.log('data :>> ', data?.data);
+  console.log('dati da API :>> ', data);
+  const {posts} = data?.data?.nike
+  posts.forEach(post => {
+    (async()=> {
+      const hashtagPost = new PostHashtag(post);
+      try {
+        await hashtagPost.save();
+        //response.send(hashtagPost);
+        console.log('Post salvato con successo !')
+      } catch (error) {
+        //response.status(500).send(error);
+      }
+    })()
+  });
+  
   console.log("Processo ETL completato");
 }); */
 
 //* MIDDLEWARE CORS
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
-app.get('/', async function (req, res) {
+app.get("/", async function (req, res) {
   res.json({ message: "Ciao dal  server! route" });
-}); 
+});
 
-app.get("/api", (req, res) => {
+/* app.get("/api", (req, res) => {
   res.json({ message: "Ciao dal  server! route api" });
-});
-
-//*aggiungere risultato a db
-app.post("/add_hashtag", async (request, response) => {
-  // esempio new
-  const hashtagPost = new PostHashtag(request.body);
-  try {
-    await hashtagPost.save();
-    response.send(hashtagPost);
-  } catch (error) {
-    response.status(500).send(error);
-  }
-});
-
-// All other GET requests not handled before will return our React app
-/* app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
 }); */
 
+//router hashtag
+app.use("/hashtags", hashtagRouter);
+
+// Rotta catch-all che restituisce il file index.html
+app.get("*", (req, res) => {
+  res.sendFile(join(__dirname, "../client", "build", "index.html"));
+});
+
 //*ASCOLTA IL SERVER
-app.listen(PORT, HOST, () =>
-  console.log(`Server in esecuzione su ${HOST}:${PORT}`),
-); 
+app.listen(PORT, HOST, () => console.log(`Server in esecuzione su ${HOST}:${PORT}`));

@@ -7,9 +7,9 @@ function App() {
   const [data, setData] = React.useState(null);
 
   React.useEffect(() => {
-    fetch("/api")
+    fetch("/hashtags/all")
       .then((res) => res.json())
-      .then((data) => setData(data.message));
+      .then((data) => console.log('data :>> ', data));
   }, []);
 
   return (

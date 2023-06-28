@@ -1,15 +1,14 @@
 import express from "express";
 import cron from "node-cron";
-import fetchData from "../source/api/fetchData.js";
+import fetchData from "./source/api/fetchData.js";
 import cors from "cors";
 import { dirname, join } from "path";
-/* import http from 'http'
-import { fileURLToPath } from 'url'; */
 import { fileURLToPath } from "url";
-import { db } from "../db/conn.js";
+import { db } from "./db/conn.js";
 import { PostHashtag } from "../models/hashtagModel.js";
 import hashtagRouter from "../routes/hashtagRoutes.js";
-
+import * as dotenv from 'dotenv'
+dotenv.config()
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,7 +34,6 @@ db.once("open", function () {
 //2 minuti
 //cron.schedule("*/2 * * * *", async () => {
 /*  console.log("Inizio processo CRON e LOAD SU DATABASE");
-
   const data = await fetchData({'nike': 'nike'});
   console.log('dati da API :>> ', data);
   const {posts} = data?.data?.nike
@@ -51,7 +49,6 @@ db.once("open", function () {
       }
     })()
   });
-  
   console.log("Processo ETL completato");
 }); */
 

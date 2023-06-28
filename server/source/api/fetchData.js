@@ -29,20 +29,20 @@ async function fetchData(event) {
           //prossima pag
           let nextPage = response?.data?.paging?.next;
           //100 risultati dalla risposta iniziale
-          let mergedResults = response?.data?.data.slice(0, 100);
+          let mergedResults = response?.data?.data.slice(0, 50);
           //chiamare le pagine successive 
-          while (nextPage && mergedResults.length < 100) {
+          while (nextPage && mergedResults.length < 50) {
             const nextPageResponse = await axios.get(nextPage);
             const nextPageData = nextPageResponse?.data?.data;
             mergedResults.push(...nextPageData);
 
-            if (mergedResults.length >= 100 || !nextPage || response?.data?.data.length === 0) {
+            if (mergedResults.length >= 50 || !nextPage || response?.data?.data.length === 0) {
               break;
             }
             nextPage = nextPageResponse?.data?.paging?.next;
           }
         //risultati uniti
-        return mergedResults.slice(0,100);
+        return mergedResults.slice(0,50);
         } else {
           return [];
         }

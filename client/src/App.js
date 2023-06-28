@@ -7,7 +7,7 @@ function App() {
   const [data, setData] = React.useState(null);
 
   React.useEffect(() => {
-    fetch("/hashtags/all")
+    fetch("https://kind-ruby-bat-suit.cyclic.app/hashtags/all")
       .then((res) => res.json())
       .then((data) => console.log('data :>> ', data));
   }, []);

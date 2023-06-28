@@ -1,11 +1,11 @@
 import axios from "axios";
 
 async function fetchData(event) {
-  const TOKEN_IG = "EAAEkggfDZAdEBAMaP3mkbdDxsVolioMQU4QlsvNz1SFw36sB7rwoqx0xhe31TYFYoLDt4PqU4wvZAZAhHu6UZC0v1R63pBSf5oktZABUjdxZArpo2VCOaZCXxcnZC8spiLL9IaEd8wgV6uxIpqdCUDCkqznlsmDUdrvSJRclLgMKbkeZBhy4SxYd1nCkPlWndZAEKaPliJxZBBqdWgeP93j0iZCuHJCwifgrW7HCiJbhaZBCZB2dQR4OujcQyBEtjlJMmGxvVtRZAXUg7MC7DZBba5mQFHVF";
+  const TOKEN_IG = "EAAEkggfDZAdEBAFjihZCS2m6rMdY1QWNTabuI38wYmShxGPrFisdpv1tES4X7XkZCKYxX76h3D3QoAb8m3QjBmoEu3cHmwzXv3QlN3DTPqeFg2Wpyl4ZCiWccnWEZChtBrTDeRbsyjyeEZAPdVGWkd8wcl0nCeXsTsxxxOqTyZBNz5A1ZCZBggYWLr3ZCReqzaqnLL4a5Eddk36ZBQQAWZBVyNAJiSQ9c8vqyzeb2A6QAR8MqzE718QEFv7qlxO4k2NkCVf8oCYoZCVrkYdWemVjCfWv7";
   const USER_ID = "17841445473312638";
   const FIELDS = "caption,media_type,like_count,comments_count,permalink,timestamp";
   const ACCESS_TOKEN =
-    "EAAEkggfDZAdEBALIXVPg6s3Fs8IYEmvBPxOWp2tdtqMBfuCUvENbN2vci2bZBuTI6gGdhLMBbPfC5t6pLZCYZBOr5J4rzoG42uS2J0ZAVQpCKPT2QZBSoPb6zUuUfQ3KtmeyNJ8iB4OSpoPwKU1G4zmTvuId9yeijCeCCMZCwFIkEFxph8s1B9k";
+    "EAAEkggfDZAdEBAIQEZChwFRm6n3TTBRiQBslc1r04wOsvEcmxncmqFa9Mgg83TnWeKdcg08dJlRbBCRCy7C1ANCPe9DrEmu2k0jrWWL1tXBiVt0qQf8G4gk7MNcKqWRgJF1tlTJ9Rjzl8bO7O9JRfbdpPWFwIcsXlMmk9baLZA21Gb6vZAs7";
   const BASE_REQUEST_FB = "https://graph.facebook.com/v14.0/";
   const config = {
     headers: {
@@ -28,21 +28,21 @@ async function fetchData(event) {
           const response = await axios.get(requestPostHashtagUrl, config);
           //prossima pag
           let nextPage = response?.data?.paging?.next;
-          //200 risultati dalla risposta iniziale
-          let mergedResults = response?.data?.data.slice(0, 200);
+          //100 risultati dalla risposta iniziale
+          let mergedResults = response?.data?.data.slice(0, 100);
           //chiamare le pagine successive 
-          while (nextPage && mergedResults.length < 200) {
+          while (nextPage && mergedResults.length < 100) {
             const nextPageResponse = await axios.get(nextPage);
             const nextPageData = nextPageResponse?.data?.data;
             mergedResults.push(...nextPageData);
 
-            if (mergedResults.length >= 200 || !nextPage || response?.data?.data.length === 0) {
+            if (mergedResults.length >= 100 || !nextPage || response?.data?.data.length === 0) {
               break;
             }
             nextPage = nextPageResponse?.data?.paging?.next;
           }
         //risultati uniti
-        return mergedResults.slice(0,200);
+        return mergedResults.slice(0,100);
         } else {
           return [];
         }

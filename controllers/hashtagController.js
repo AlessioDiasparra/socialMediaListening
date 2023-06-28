@@ -1,4 +1,5 @@
 import { PostHashtag } from "../models/hashtagModel.js";
+import fetchData from "../server/source/api/fetchData.js";
 
 export const getAllPosts = async (request, response) => {
   try {
@@ -53,3 +54,23 @@ export const getPostsFilterLikesComments = async (req, res) => {
     res.status(500).send(err);
   }
 };
+
+
+export const startAcquisitions = async (req, res) => {
+  const data = await fetchData({ [req.params.hashtag]: req.params.hashtag });
+  if (data?.data) {
+    const { posts } = data?.data[req.params.hashtag];
+    try {
+      posts.forEach(post => {
+        (async () => {
+          const hashtagPost = new PostHashtag(post);
+            await hashtagPost.save();
+        })();
+      });
+      res.status(200).send('Post salvati con successo!');
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  }
+};
+

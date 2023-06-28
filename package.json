@@ -2,6 +2,7 @@
   "name": "social_media_listening",
   "version": "1.0.0",
   "description": "",
+  "main": "./server/app.js",
   "type": "module",
   "scripts": {
     "install-server": "npm install",

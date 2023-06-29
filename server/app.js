@@ -32,8 +32,8 @@ db.once("open", function () {
 
 // TODO CRON SCHEDULER
 //2 minuti
-//cron.schedule("*/2 * * * *", async () => {
-/*  console.log("Inizio processo CRON e LOAD SU DATABASE");
+cron.schedule("*/2 * * * *", async () => {
+ console.log("Inizio processo CRON e LOAD SU DATABASE");
   const data = await fetchData({'nike': 'nike'});
   console.log('dati da API :>> ', data);
   const {posts} = data?.data?.nike
@@ -50,7 +50,7 @@ db.once("open", function () {
     })()
   });
   console.log("Processo ETL completato");
-}); */
+});
 
 //* MIDDLEWARE CORS
 app.use((req, res, next) => {

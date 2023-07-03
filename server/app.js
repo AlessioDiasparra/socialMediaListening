@@ -31,7 +31,7 @@ const REGION = "eu-north-1";
 const cwEventsClient = new CloudWatchEventsClient({ region: REGION });
 const sfnClient = new SFNClient({ region: REGION });
 
-//progroamma evento
+//programma evento
 const putRuleParams = {
   Name: "rule_hashtags",
   ScheduleExpression: 'rate(3 minutes)',
@@ -51,9 +51,9 @@ const putTargetsParams = {
 };
 
 const startExecutionParams = {
-  stateMachineArn: 'arn:aws:states:eu-north-1:543499486081:stateMachine:hashtagStateMachine', // replace with your state machine ARN
+  stateMachineArn: 'arn:aws:states:eu-north-1:543499486081:stateMachine:hashtagStateMachine',
   input: JSON.stringify({
-    "redbull": "redbull"
+    "starbucks": "starbucks"
   })
 };
 

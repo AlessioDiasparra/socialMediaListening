@@ -1,5 +1,2 @@
 .env
 /node_modules
-
-# production
-/client/build/node_modules

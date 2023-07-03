@@ -1,0 +1,90 @@
+import { EndpointParameterInstructions } from "@smithy/middleware-endpoint";
+import { Command as $Command } from "@smithy/smithy-client";
+import { Handler, HttpHandlerOptions as __HttpHandlerOptions, MetadataBearer as __MetadataBearer, MiddlewareStack } from "@smithy/types";
+import { ListStateMachinesInput, ListStateMachinesOutput } from "../models/models_0";
+import { ServiceInputTypes, ServiceOutputTypes, SFNClientResolvedConfig } from "../SFNClient";
+/**
+ * @public
+ */
+export { __MetadataBearer, $Command };
+/**
+ * @public
+ *
+ * The input for {@link ListStateMachinesCommand}.
+ */
+export interface ListStateMachinesCommandInput extends ListStateMachinesInput {
+}
+/**
+ * @public
+ *
+ * The output of {@link ListStateMachinesCommand}.
+ */
+export interface ListStateMachinesCommandOutput extends ListStateMachinesOutput, __MetadataBearer {
+}
+/**
+ * @public
+ * <p>Lists the existing state machines.</p>
+ *          <p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page.
+ *     Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken</i> error.</p>
+ *          <note>
+ *             <p>This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.</p>
+ *          </note>
+ * @example
+ * Use a bare-bones client and the command you need to make an API call.
+ * ```javascript
+ * import { SFNClient, ListStateMachinesCommand } from "@aws-sdk/client-sfn"; // ES Modules import
+ * // const { SFNClient, ListStateMachinesCommand } = require("@aws-sdk/client-sfn"); // CommonJS import
+ * const client = new SFNClient(config);
+ * const input = { // ListStateMachinesInput
+ *   maxResults: Number("int"),
+ *   nextToken: "STRING_VALUE",
+ * };
+ * const command = new ListStateMachinesCommand(input);
+ * const response = await client.send(command);
+ * // { // ListStateMachinesOutput
+ * //   stateMachines: [ // StateMachineList // required
+ * //     { // StateMachineListItem
+ * //       stateMachineArn: "STRING_VALUE", // required
+ * //       name: "STRING_VALUE", // required
+ * //       type: "STANDARD" || "EXPRESS", // required
+ * //       creationDate: new Date("TIMESTAMP"), // required
+ * //     },
+ * //   ],
+ * //   nextToken: "STRING_VALUE",
+ * // };
+ *
+ * ```
+ *
+ * @param ListStateMachinesCommandInput - {@link ListStateMachinesCommandInput}
+ * @returns {@link ListStateMachinesCommandOutput}
+ * @see {@link ListStateMachinesCommandInput} for command's `input` shape.
+ * @see {@link ListStateMachinesCommandOutput} for command's `response` shape.
+ * @see {@link SFNClientResolvedConfig | config} for SFNClient's `config` shape.
+ *
+ * @throws {@link InvalidToken} (client fault)
+ *  <p>The provided token is not valid.</p>
+ *
+ * @throws {@link SFNServiceException}
+ * <p>Base exception class for all service exceptions from SFN service.</p>
+ *
+ */
+export declare class ListStateMachinesCommand extends $Command<ListStateMachinesCommandInput, ListStateMachinesCommandOutput, SFNClientResolvedConfig> {
+    readonly input: ListStateMachinesCommandInput;
+    static getEndpointParameterInstructions(): EndpointParameterInstructions;
+    /**
+     * @public
+     */
+    constructor(input: ListStateMachinesCommandInput);
+    /**
+     * @internal
+     */
+    resolveMiddleware(clientStack: MiddlewareStack<ServiceInputTypes, ServiceOutputTypes>, configuration: SFNClientResolvedConfig, options?: __HttpHandlerOptions): Handler<ListStateMachinesCommandInput, ListStateMachinesCommandOutput>;
+    /**
+     * @internal
+     */
+    private serialize;
+    /**
+     * @internal
+     */
+    private deserialize;
+}

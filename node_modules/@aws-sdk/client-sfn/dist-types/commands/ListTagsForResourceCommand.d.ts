@@ -1,0 +1,85 @@
+import { EndpointParameterInstructions } from "@smithy/middleware-endpoint";
+import { Command as $Command } from "@smithy/smithy-client";
+import { Handler, HttpHandlerOptions as __HttpHandlerOptions, MetadataBearer as __MetadataBearer, MiddlewareStack } from "@smithy/types";
+import { ListTagsForResourceInput, ListTagsForResourceOutput } from "../models/models_0";
+import { ServiceInputTypes, ServiceOutputTypes, SFNClientResolvedConfig } from "../SFNClient";
+/**
+ * @public
+ */
+export { __MetadataBearer, $Command };
+/**
+ * @public
+ *
+ * The input for {@link ListTagsForResourceCommand}.
+ */
+export interface ListTagsForResourceCommandInput extends ListTagsForResourceInput {
+}
+/**
+ * @public
+ *
+ * The output of {@link ListTagsForResourceCommand}.
+ */
+export interface ListTagsForResourceCommandOutput extends ListTagsForResourceOutput, __MetadataBearer {
+}
+/**
+ * @public
+ * <p>List tags for a given resource.</p>
+ *          <p>Tags may only contain Unicode letters, digits, white space, or these symbols: <code>_ . : / = + - @</code>.</p>
+ * @example
+ * Use a bare-bones client and the command you need to make an API call.
+ * ```javascript
+ * import { SFNClient, ListTagsForResourceCommand } from "@aws-sdk/client-sfn"; // ES Modules import
+ * // const { SFNClient, ListTagsForResourceCommand } = require("@aws-sdk/client-sfn"); // CommonJS import
+ * const client = new SFNClient(config);
+ * const input = { // ListTagsForResourceInput
+ *   resourceArn: "STRING_VALUE", // required
+ * };
+ * const command = new ListTagsForResourceCommand(input);
+ * const response = await client.send(command);
+ * // { // ListTagsForResourceOutput
+ * //   tags: [ // TagList
+ * //     { // Tag
+ * //       key: "STRING_VALUE",
+ * //       value: "STRING_VALUE",
+ * //     },
+ * //   ],
+ * // };
+ *
+ * ```
+ *
+ * @param ListTagsForResourceCommandInput - {@link ListTagsForResourceCommandInput}
+ * @returns {@link ListTagsForResourceCommandOutput}
+ * @see {@link ListTagsForResourceCommandInput} for command's `input` shape.
+ * @see {@link ListTagsForResourceCommandOutput} for command's `response` shape.
+ * @see {@link SFNClientResolvedConfig | config} for SFNClient's `config` shape.
+ *
+ * @throws {@link InvalidArn} (client fault)
+ *  <p>The provided Amazon Resource Name (ARN) is not valid.</p>
+ *
+ * @throws {@link ResourceNotFound} (client fault)
+ *  <p>Could not find the referenced resource.</p>
+ *
+ * @throws {@link SFNServiceException}
+ * <p>Base exception class for all service exceptions from SFN service.</p>
+ *
+ */
+export declare class ListTagsForResourceCommand extends $Command<ListTagsForResourceCommandInput, ListTagsForResourceCommandOutput, SFNClientResolvedConfig> {
+    readonly input: ListTagsForResourceCommandInput;
+    static getEndpointParameterInstructions(): EndpointParameterInstructions;
+    /**
+     * @public
+     */
+    constructor(input: ListTagsForResourceCommandInput);
+    /**
+     * @internal
+     */
+    resolveMiddleware(clientStack: MiddlewareStack<ServiceInputTypes, ServiceOutputTypes>, configuration: SFNClientResolvedConfig, options?: __HttpHandlerOptions): Handler<ListTagsForResourceCommandInput, ListTagsForResourceCommandOutput>;
+    /**
+     * @internal
+     */
+    private serialize;
+    /**
+     * @internal
+     */
+    private deserialize;
+}

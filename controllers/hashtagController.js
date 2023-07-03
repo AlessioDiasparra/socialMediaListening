@@ -58,19 +58,22 @@ export const getPostsFilterLikesComments = async (req, res) => {
 
 
 export const startAcquisitions = async (req, res) => {
-  const HASHTAG_API_URL =
+ /*  const HASHTAG_API_URL =
       "https://p68xx6hws2.execute-api.eu-north-1.amazonaws.com/develop/instagram-hashtags";
-  const response = await axios.post(HASHTAG_API_URL, { [req.params.hashtag]: req.params.hashtag })
-  /* const data = await fetchData({ [req.params.hashtag]: req.params.hashtag }); */
-  if (response?.data?.data) {
-    const { posts } = response?.data?.data[req.params.hashtag];
+  const response = await axios.post(HASHTAG_API_URL, { [req.params.hashtag]: req.params.hashtag }) */
+  const data = await fetchData({ [req.params.hashtag]: req.params.hashtag });
+  if (data?.data) {
+    const { posts } = data?.data[req.params.hashtag];
     try {
-      posts.forEach(post => {
-        (async () => {
-          const hashtagPost = new PostHashtag(post);
-            await hashtagPost.save();
-        })();
-      });
+      await Promise.all(posts.map(async (post) => {
+        const hashtagPost = new PostHashtag(post);
+        try {
+          await hashtagPost.save();
+        } catch (err) {
+          console.error(`Failed to save post: ${err}`);
+          // Gestisci l'errore come preferisci
+        }
+      }));
       res.status(200).send('Post salvati con successo!');
     } catch (err) {
       res.status(500).send(err);

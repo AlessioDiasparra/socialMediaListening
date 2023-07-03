@@ -1,0 +1,84 @@
+import { EndpointParameterInstructions } from "@smithy/middleware-endpoint";
+import { Command as $Command } from "@smithy/smithy-client";
+import { Handler, HttpHandlerOptions as __HttpHandlerOptions, MetadataBearer as __MetadataBearer, MiddlewareStack } from "@smithy/types";
+import { DescribeActivityInput, DescribeActivityOutput } from "../models/models_0";
+import { ServiceInputTypes, ServiceOutputTypes, SFNClientResolvedConfig } from "../SFNClient";
+/**
+ * @public
+ */
+export { __MetadataBearer, $Command };
+/**
+ * @public
+ *
+ * The input for {@link DescribeActivityCommand}.
+ */
+export interface DescribeActivityCommandInput extends DescribeActivityInput {
+}
+/**
+ * @public
+ *
+ * The output of {@link DescribeActivityCommand}.
+ */
+export interface DescribeActivityCommandOutput extends DescribeActivityOutput, __MetadataBearer {
+}
+/**
+ * @public
+ * <p>Describes an activity.</p>
+ *          <note>
+ *             <p>This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.</p>
+ *          </note>
+ * @example
+ * Use a bare-bones client and the command you need to make an API call.
+ * ```javascript
+ * import { SFNClient, DescribeActivityCommand } from "@aws-sdk/client-sfn"; // ES Modules import
+ * // const { SFNClient, DescribeActivityCommand } = require("@aws-sdk/client-sfn"); // CommonJS import
+ * const client = new SFNClient(config);
+ * const input = { // DescribeActivityInput
+ *   activityArn: "STRING_VALUE", // required
+ * };
+ * const command = new DescribeActivityCommand(input);
+ * const response = await client.send(command);
+ * // { // DescribeActivityOutput
+ * //   activityArn: "STRING_VALUE", // required
+ * //   name: "STRING_VALUE", // required
+ * //   creationDate: new Date("TIMESTAMP"), // required
+ * // };
+ *
+ * ```
+ *
+ * @param DescribeActivityCommandInput - {@link DescribeActivityCommandInput}
+ * @returns {@link DescribeActivityCommandOutput}
+ * @see {@link DescribeActivityCommandInput} for command's `input` shape.
+ * @see {@link DescribeActivityCommandOutput} for command's `response` shape.
+ * @see {@link SFNClientResolvedConfig | config} for SFNClient's `config` shape.
+ *
+ * @throws {@link ActivityDoesNotExist} (client fault)
+ *  <p>The specified activity does not exist.</p>
+ *
+ * @throws {@link InvalidArn} (client fault)
+ *  <p>The provided Amazon Resource Name (ARN) is not valid.</p>
+ *
+ * @throws {@link SFNServiceException}
+ * <p>Base exception class for all service exceptions from SFN service.</p>
+ *
+ */
+export declare class DescribeActivityCommand extends $Command<DescribeActivityCommandInput, DescribeActivityCommandOutput, SFNClientResolvedConfig> {
+    readonly input: DescribeActivityCommandInput;
+    static getEndpointParameterInstructions(): EndpointParameterInstructions;
+    /**
+     * @public
+     */
+    constructor(input: DescribeActivityCommandInput);
+    /**
+     * @internal
+     */
+    resolveMiddleware(clientStack: MiddlewareStack<ServiceInputTypes, ServiceOutputTypes>, configuration: SFNClientResolvedConfig, options?: __HttpHandlerOptions): Handler<DescribeActivityCommandInput, DescribeActivityCommandOutput>;
+    /**
+     * @internal
+     */
+    private serialize;
+    /**
+     * @internal
+     */
+    private deserialize;
+}

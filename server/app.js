@@ -1,15 +1,77 @@
 import express from "express";
-import cron from "node-cron";
-import fetchData from "./source/api/fetchData.js";
+//import cron from "node-cron";
+//import fetchData from "./source/api/fetchData.js";
 import cors from "cors";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { db } from "./db/conn.js";
-import { PostHashtag } from "../models/hashtagModel.js";
+//import { PostHashtag } from "../models/hashtagModel.js";
 import hashtagRouter from "../routes/hashtagRoutes.js";
-import * as dotenv from 'dotenv'
-dotenv.config()
+import * as dotenv from "dotenv";
+import AWS from "aws-sdk";
+import { PutRuleCommand, PutTargetsCommand } from "@aws-sdk/client-cloudwatch-events";
+import { CloudWatchEventsClient } from "@aws-sdk/client-cloudwatch-events";
+import { StartExecutionCommand } from "@aws-sdk/client-sfn";
+import { SFNClient } from "@aws-sdk/client-sfn";
+//configurazione variabili d'ambiente
+dotenv.config();
+
 const app = express();
+
+//credenziali aws
+AWS.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+  region: "eu-north-1"
+});
+
+const REGION = "eu-north-1";
+
+// Setta la Region AWS 
+const cwEventsClient = new CloudWatchEventsClient({ region: REGION });
+const sfnClient = new SFNClient({ region: REGION });
+
+//progroamma evento
+const putRuleParams = {
+  Name: "rule_hashtags",
+  ScheduleExpression: 'rate(3 minutes)',
+  State: 'ENABLED'
+};
+
+//Destinazioni
+const putTargetsParams = {
+  Rule: "rule_hashtags",
+  Targets: [
+    {
+      Arn: 'arn:aws:states:eu-north-1:543499486081:stateMachine:hashtagStateMachine',
+      RoleArn: 'arn:aws:iam::543499486081:role/service-role/Amazon_EventBridge_Scheduler_SFN_b56c7002fa',
+      Id: 'ac8784dc-1993-11ee-be56-0242ac120002',
+    }
+  ]
+};
+
+const startExecutionParams = {
+  stateMachineArn: 'arn:aws:states:eu-north-1:543499486081:stateMachine:hashtagStateMachine', // replace with your state machine ARN
+  input: JSON.stringify({
+    "redbull": "redbull"
+  })
+};
+
+//esecuzione step function
+const run = async () => {
+  try {
+    const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
+    console.log("Regola creata con successo: ", ruleResponse.RuleArn);
+    const targetsResponse = await cwEventsClient.send(new PutTargetsCommand(putTargetsParams));
+    console.log("Destinazione assegnata correttamente: ", targetsResponse);
+    const executionResponse = await sfnClient.send(new StartExecutionCommand(startExecutionParams));
+    console.log("Esecuzione iniziata con successo: ", executionResponse);
+  } catch (err) {
+    console.log("Error", err);
+  }
+};
+
+run();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

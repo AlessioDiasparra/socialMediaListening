@@ -1,0 +1,135 @@
+import { EndpointParameterInstructions } from "@smithy/middleware-endpoint";
+import { Command as $Command } from "@smithy/smithy-client";
+import { Handler, HttpHandlerOptions as __HttpHandlerOptions, MetadataBearer as __MetadataBearer, MiddlewareStack } from "@smithy/types";
+import { DescribeStateMachineInput, DescribeStateMachineOutput } from "../models/models_0";
+import { ServiceInputTypes, ServiceOutputTypes, SFNClientResolvedConfig } from "../SFNClient";
+/**
+ * @public
+ */
+export { __MetadataBearer, $Command };
+/**
+ * @public
+ *
+ * The input for {@link DescribeStateMachineCommand}.
+ */
+export interface DescribeStateMachineCommandInput extends DescribeStateMachineInput {
+}
+/**
+ * @public
+ *
+ * The output of {@link DescribeStateMachineCommand}.
+ */
+export interface DescribeStateMachineCommandOutput extends DescribeStateMachineOutput, __MetadataBearer {
+}
+/**
+ * @public
+ * <p>Provides information about a state machine's definition, its IAM role Amazon Resource Name (ARN), and configuration.</p>
+ *          <p>A qualified state machine ARN can either refer to a <i>Distributed Map state</i> defined within a state machine, a version ARN, or an alias ARN.</p>
+ *          <p>The following are some examples of qualified and unqualified state machine ARNs:</p>
+ *          <ul>
+ *             <li>
+ *                <p>The following qualified state machine ARN refers to a <i>Distributed Map state</i> with a label <code>mapStateLabel</code> in a state machine named <code>myStateMachine</code>.</p>
+ *                <p>
+ *                   <code>arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel</code>
+ *                </p>
+ *                <note>
+ *                   <p>If you provide a qualified state machine ARN that refers to a <i>Distributed Map state</i>, the request fails with <code>ValidationException</code>.</p>
+ *                </note>
+ *             </li>
+ *             <li>
+ *                <p>The following qualified state machine ARN refers to an alias named <code>PROD</code>.</p>
+ *                <p>
+ *                   <code>arn:<partition>:states:<region>:<account-id>:stateMachine:<myStateMachine:PROD></code>
+ *                </p>
+ *                <note>
+ *                   <p>If you provide a qualified state machine ARN that refers to a version ARN or an alias ARN, the request starts execution for that version or alias.</p>
+ *                </note>
+ *             </li>
+ *             <li>
+ *                <p>The following unqualified state machine ARN refers to a state machine named <code>myStateMachine</code>.</p>
+ *                <p>
+ *                   <code>arn:<partition>:states:<region>:<account-id>:stateMachine:<myStateMachine></code>
+ *                </p>
+ *             </li>
+ *          </ul>
+ *          <p>This API action returns the details for a state machine version if the
+ *         <code>stateMachineArn</code> you specify is a state machine version ARN.</p>
+ *          <note>
+ *             <p>This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.</p>
+ *          </note>
+ * @example
+ * Use a bare-bones client and the command you need to make an API call.
+ * ```javascript
+ * import { SFNClient, DescribeStateMachineCommand } from "@aws-sdk/client-sfn"; // ES Modules import
+ * // const { SFNClient, DescribeStateMachineCommand } = require("@aws-sdk/client-sfn"); // CommonJS import
+ * const client = new SFNClient(config);
+ * const input = { // DescribeStateMachineInput
+ *   stateMachineArn: "STRING_VALUE", // required
+ * };
+ * const command = new DescribeStateMachineCommand(input);
+ * const response = await client.send(command);
+ * // { // DescribeStateMachineOutput
+ * //   stateMachineArn: "STRING_VALUE", // required
+ * //   name: "STRING_VALUE", // required
+ * //   status: "ACTIVE" || "DELETING",
+ * //   definition: "STRING_VALUE", // required
+ * //   roleArn: "STRING_VALUE", // required
+ * //   type: "STANDARD" || "EXPRESS", // required
+ * //   creationDate: new Date("TIMESTAMP"), // required
+ * //   loggingConfiguration: { // LoggingConfiguration
+ * //     level: "ALL" || "ERROR" || "FATAL" || "OFF",
+ * //     includeExecutionData: true || false,
+ * //     destinations: [ // LogDestinationList
+ * //       { // LogDestination
+ * //         cloudWatchLogsLogGroup: { // CloudWatchLogsLogGroup
+ * //           logGroupArn: "STRING_VALUE",
+ * //         },
+ * //       },
+ * //     ],
+ * //   },
+ * //   tracingConfiguration: { // TracingConfiguration
+ * //     enabled: true || false,
+ * //   },
+ * //   label: "STRING_VALUE",
+ * //   revisionId: "STRING_VALUE",
+ * //   description: "STRING_VALUE",
+ * // };
+ *
+ * ```
+ *
+ * @param DescribeStateMachineCommandInput - {@link DescribeStateMachineCommandInput}
+ * @returns {@link DescribeStateMachineCommandOutput}
+ * @see {@link DescribeStateMachineCommandInput} for command's `input` shape.
+ * @see {@link DescribeStateMachineCommandOutput} for command's `response` shape.
+ * @see {@link SFNClientResolvedConfig | config} for SFNClient's `config` shape.
+ *
+ * @throws {@link InvalidArn} (client fault)
+ *  <p>The provided Amazon Resource Name (ARN) is not valid.</p>
+ *
+ * @throws {@link StateMachineDoesNotExist} (client fault)
+ *  <p>The specified state machine does not exist.</p>
+ *
+ * @throws {@link SFNServiceException}
+ * <p>Base exception class for all service exceptions from SFN service.</p>
+ *
+ */
+export declare class DescribeStateMachineCommand extends $Command<DescribeStateMachineCommandInput, DescribeStateMachineCommandOutput, SFNClientResolvedConfig> {
+    readonly input: DescribeStateMachineCommandInput;
+    static getEndpointParameterInstructions(): EndpointParameterInstructions;
+    /**
+     * @public
+     */
+    constructor(input: DescribeStateMachineCommandInput);
+    /**
+     * @internal
+     */
+    resolveMiddleware(clientStack: MiddlewareStack<ServiceInputTypes, ServiceOutputTypes>, configuration: SFNClientResolvedConfig, options?: __HttpHandlerOptions): Handler<DescribeStateMachineCommandInput, DescribeStateMachineCommandOutput>;
+    /**
+     * @internal
+     */
+    private serialize;
+    /**
+     * @internal
+     */
+    private deserialize;
+}

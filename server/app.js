@@ -199,7 +199,7 @@ const run = async () => {
   );
 };
 
-run();
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -228,16 +228,18 @@ app.use((req, res, next) => {
 });
 
 app.get("/", async function (req, res) {
-  res.json({ message: "Ciao dal  server! route" });
+  res.json({ message: "scheduler in esecuzione" });
 });
 
 /* app.get("/api", (req, res) => {
   res.json({ message: "Ciao dal  server! route api" });
 }); */
 
+run();
 //router hashtag
 app.use("/hashtags", hashtagRouter);
 
 
 //*ASCOLTA IL SERVER
 app.listen(PORT, HOST, () => console.log(`Server in esecuzione su ${HOST}:${PORT}`));
+

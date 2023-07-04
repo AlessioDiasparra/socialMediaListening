@@ -133,7 +133,7 @@ export const createScheduler = async (req, res) => {
         //crea pianificatore
         const createScheduleParams = {
           Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
-          ScheduleExpression: "rate(8 minutes)",
+          ScheduleExpression: "rate(6 hours)",
           State: "ENABLED",
           /* StartDate: new Date("TIMESTAMP"),
               EndDate: new Date("TIMESTAMP"), */
@@ -158,7 +158,7 @@ export const createScheduler = async (req, res) => {
         //modifica regola
         const putRuleParams = {
           Name: ruleName,
-          ScheduleExpression: "rate(2 minutes)",
+          ScheduleExpression: "rate(50 minutes)",
           State: "ENABLED"
         };
 

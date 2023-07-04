@@ -220,9 +220,9 @@ app.get("/", async function (req, res) {
   res.json({ message: "Ciao dal  server! route api" });
 }); */
 
-run();
+
 //router hashtag
 app.use("/hashtags", hashtagRouter);
 
 //*ASCOLTA IL SERVER
-app.listen(PORT, HOST, () => console.log(`Server in esecuzione su ${HOST}:${PORT}`));
+app.listen(PORT, HOST, async() => await run());

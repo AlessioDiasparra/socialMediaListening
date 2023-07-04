@@ -9,14 +9,49 @@ import { db } from "./db/conn.js";
 import hashtagRouter from "../routes/hashtagRoutes.js";
 import * as dotenv from "dotenv";
 import AWS from "aws-sdk";
-import { PutRuleCommand, PutTargetsCommand } from "@aws-sdk/client-cloudwatch-events";
-import { CloudWatchEventsClient } from "@aws-sdk/client-cloudwatch-events";
-import { StartExecutionCommand } from "@aws-sdk/client-sfn";
-import { SFNClient } from "@aws-sdk/client-sfn";
+import {
+  PutRuleCommand,
+  PutTargetsCommand,
+  CloudWatchEventsClient,
+  DescribeRuleCommand
+} from "@aws-sdk/client-cloudwatch-events";
+/* import { StartExecutionCommand } from "@aws-sdk/client-sfn";
+import { SFNClient } from "@aws-sdk/client-sfn"; */
+import {
+  SchedulerClient,
+  UpdateScheduleCommand,
+  CreateScheduleCommand
+} from "@aws-sdk/client-scheduler";
+import axios from "axios";
+import { URL } from 'url';
+
 //configurazione variabili d'ambiente
 dotenv.config();
 
 const app = express();
+
+// TODO GET ALL ACQUISITIONS (TOKEN INIETTATO, SESSIONE)
+const axiosApiClient = axios.create({
+  baseURL: process.env.SERVER_URL_ECO
+});
+
+axiosApiClient.interceptors.request.use(
+  config => {
+    let token = process.env.TOKEN_ECO;
+    if (token) {
+      config.headers["Authorization"] = "Bearer " + token;
+    }
+    return config;
+  },
+  error => {
+    if (error.response.status === 401) {
+      token = "";
+    }
+  }
+);
+const respAllAcquisitions = await axiosApiClient.get("/getall");
+// sintassi rinomina data + destructuring
+const { data: acquisitions } = respAllAcquisitions;
 
 //credenziali aws
 AWS.config.update({
@@ -27,12 +62,27 @@ AWS.config.update({
 
 const REGION = "eu-north-1";
 
-// Setta la Region AWS 
+// Setta la Region AWS
 const cwEventsClient = new CloudWatchEventsClient({ region: REGION });
-const sfnClient = new SFNClient({ region: REGION });
+const schedulerClient = new SchedulerClient({ region: REGION });
+
+//*modifica pianificatore
+const updateScheduleParams = {
+  Name: "rule_hashtags",
+  ScheduleExpression: "rate(4 minutes)",
+  State: "ENABLED",
+  Target: {
+    Arn: process.env.arn_hashtagStateMachine,
+    RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler
+  },
+  FlexibleTimeWindow: {
+    Mode: "FLEXIBLE",
+    MaximumWindowInMinutes: 15
+  }
+};
 
 //programma evento
-const putRuleParams = {
+/* const putRuleParams = {
   Name: "rule_hashtags",
   ScheduleExpression: 'rate(3 minutes)',
   State: 'ENABLED'
@@ -48,27 +98,106 @@ const putTargetsParams = {
       Id: 'ac8784dc-1993-11ee-be56-0242ac120002',
     }
   ]
-};
+}; */
 
-const startExecutionParams = {
-  stateMachineArn: 'arn:aws:states:eu-north-1:543499486081:stateMachine:hashtagStateMachine',
-  input: JSON.stringify({
-    "starbucks": "starbucks"
-  })
-};
-
-//esecuzione step function
-const run = async () => {
+//esecuzione SCHEDULER
+/* const run = async () => {
   try {
+    //cloudwatch event comando modifica regola
     const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
     console.log("Regola creata con successo: ", ruleResponse.RuleArn);
+    //cloudwatch event comando modifica destinazione
     const targetsResponse = await cwEventsClient.send(new PutTargetsCommand(putTargetsParams));
     console.log("Destinazione assegnata correttamente: ", targetsResponse);
-    const executionResponse = await sfnClient.send(new StartExecutionCommand(startExecutionParams));
-    console.log("Esecuzione iniziata con successo: ", executionResponse);
+   const schedulerResponse = await schedulerClient.send(new CreateScheduleCommand(updateScheduleParams));
+    console.log("Risposta pianificatore: ", schedulerResponse);
+
   } catch (err) {
     console.log("Error", err);
   }
+};
+run();*/
+
+//crea uno scheduler per ogni acquisizione
+const run = async () => {
+  await Promise.all(
+    acquisitions.map(async a => {
+      console.log("a :>> ", a);
+      const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;
+
+      const inputHashtagEvent = a?.hashTags.reduce((obj, item) => {
+        obj["acquisition_id"] = a.id;
+        obj[item] = item;
+        return obj;
+      }, {});
+
+      try {
+        const describeRuleParams = { Name: ruleName };
+        await cwEventsClient.send(new DescribeRuleCommand(describeRuleParams));
+        console.log("Pianificatore esistente trovato: ", ruleName);
+      } catch (err) {
+        if (err.name === "ResourceNotFoundException") {
+
+          //crea pianificatore
+          const createScheduleParams = {
+            Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
+            ScheduleExpression: "rate(8 minutes)",
+            State: "ENABLED",
+            /* StartDate: new Date("TIMESTAMP"),
+            EndDate: new Date("TIMESTAMP"), */
+            //destinazione STEP FUNCTION
+            Target: {
+              Arn: process.env.arn_hashtagStateMachine,
+              RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
+              //input di hashtag da passare
+              Input: JSON.stringify(inputHashtagEvent)
+            },
+            FlexibleTimeWindow: {
+              // FlexibleTimeWindow
+              Mode: "FLEXIBLE",
+              MaximumWindowInMinutes: 15
+            }
+          };
+
+          console.log("Il pianificatore non esiste, creazione in corso...");
+          const schedulerResponse = await schedulerClient.send(
+            new CreateScheduleCommand(createScheduleParams)
+          );
+          console.log("Risposta pianificatore: ", schedulerResponse);
+
+          //modifica regola
+          const putRuleParams = {
+            Name: ruleName,
+            ScheduleExpression: "rate(2 minutes)",
+            State: "ENABLED"
+          };
+
+          //modifica destinazione
+          const putTargetsParams = {
+            Rule: ruleName,
+            Targets: [
+              {
+                Arn: process.env.arn_hashtagStateMachine,
+                RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
+                Id: "ac8784dc-1993-11ee-be56-0242ac120002",
+                Input: JSON.stringify(inputHashtagEvent)
+              }
+            ]
+          };
+
+          const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
+          console.log("Regola creata con successo: ", ruleResponse.RuleArn);
+
+          const targetsResponse = await cwEventsClient.send(
+            new PutTargetsCommand(putTargetsParams)
+          );
+          console.log("Destinazione assegnata correttamente: ", targetsResponse);
+        } else {
+          console.error("Errore durante la verifica dell'esistenza del pianificatore: ", err);
+        }
+      }
+    })
+  );
 };
 
 run();
@@ -91,28 +220,6 @@ db.on("error", console.error.bind(console, "errore di connessione a db: "));
 db.once("open", function () {
   console.log("connesso ad atlas");
 });
-
-// TODO CRON SCHEDULER
-//2 minuti
-//cron.schedule("*/2 * * * *", async () => {
-/*  console.log("Inizio processo CRON e LOAD SU DATABASE");
-  const data = await fetchData({'nike': 'nike'});
-  console.log('dati da API :>> ', data);
-  const {posts} = data?.data?.nike
-  posts.forEach(post => {
-    (async()=> {
-      const hashtagPost = new PostHashtag(post);
-      try {
-        await hashtagPost.save();
-        //response.send(hashtagPost);
-        console.log('Post salvato con successo !')
-      } catch (error) {
-        //response.status(500).send(error);
-      }
-    })()
-  });
-  console.log("Processo ETL completato");
-}); */
 
 //* MIDDLEWARE CORS
 app.use((req, res, next) => {

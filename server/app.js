@@ -23,7 +23,7 @@ import {
   CreateScheduleCommand
 } from "@aws-sdk/client-scheduler";
 import axios from "axios";
-import { URL } from 'url';
+import { URL } from "url";
 
 //configurazione variabili d'ambiente
 dotenv.config();
@@ -130,76 +130,61 @@ const run = async () => {
         return obj;
       }, {});
 
-      try {
-        const describeRuleParams = { Name: ruleName };
-        await cwEventsClient.send(new DescribeRuleCommand(describeRuleParams));
-        console.log("Pianificatore esistente trovato: ", ruleName);
-      } catch (err) {
-        if (err.name === "ResourceNotFoundException") {
-
-          //crea pianificatore
-          const createScheduleParams = {
-            Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
-            ScheduleExpression: "rate(8 minutes)",
-            State: "ENABLED",
-            /* StartDate: new Date("TIMESTAMP"),
+      //crea pianificatore
+      const createScheduleParams = {
+        Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
+        ScheduleExpression: "rate(8 minutes)",
+        State: "ENABLED",
+        /* StartDate: new Date("TIMESTAMP"),
             EndDate: new Date("TIMESTAMP"), */
-            //destinazione STEP FUNCTION
-            Target: {
-              Arn: process.env.arn_hashtagStateMachine,
-              RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
-              //input di hashtag da passare
-              Input: JSON.stringify(inputHashtagEvent)
-            },
-            FlexibleTimeWindow: {
-              // FlexibleTimeWindow
-              Mode: "FLEXIBLE",
-              MaximumWindowInMinutes: 15
-            }
-          };
-
-          console.log("Il pianificatore non esiste, creazione in corso...");
-          const schedulerResponse = await schedulerClient.send(
-            new CreateScheduleCommand(createScheduleParams)
-          );
-          console.log("Risposta pianificatore: ", schedulerResponse);
-
-          //modifica regola
-          const putRuleParams = {
-            Name: ruleName,
-            ScheduleExpression: "rate(2 minutes)",
-            State: "ENABLED"
-          };
-
-          //modifica destinazione
-          const putTargetsParams = {
-            Rule: ruleName,
-            Targets: [
-              {
-                Arn: process.env.arn_hashtagStateMachine,
-                RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
-                Id: "ac8784dc-1993-11ee-be56-0242ac120002",
-                Input: JSON.stringify(inputHashtagEvent)
-              }
-            ]
-          };
-
-          const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
-          console.log("Regola creata con successo: ", ruleResponse.RuleArn);
-
-          const targetsResponse = await cwEventsClient.send(
-            new PutTargetsCommand(putTargetsParams)
-          );
-          console.log("Destinazione assegnata correttamente: ", targetsResponse);
-        } else {
-          console.error("Errore durante la verifica dell'esistenza del pianificatore: ", err);
+        //destinazione STEP FUNCTION
+        Target: {
+          Arn: process.env.arn_hashtagStateMachine,
+          RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
+          //input di hashtag da passare
+          Input: JSON.stringify(inputHashtagEvent)
+        },
+        FlexibleTimeWindow: {
+          // FlexibleTimeWindow
+          Mode: "FLEXIBLE",
+          MaximumWindowInMinutes: 15
         }
-      }
+      };
+
+      console.log("Il pianificatore non esiste, creazione in corso...");
+      const schedulerResponse = await schedulerClient.send(
+        new CreateScheduleCommand(createScheduleParams)
+      );
+      console.log("Risposta pianificatore: ", schedulerResponse);
+
+      //modifica regola
+      const putRuleParams = {
+        Name: ruleName,
+        ScheduleExpression: "rate(2 minutes)",
+        State: "ENABLED"
+      };
+
+      //modifica destinazione
+      const putTargetsParams = {
+        Rule: ruleName,
+        Targets: [
+          {
+            Arn: process.env.arn_hashtagStateMachine,
+            RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
+            Id: "ac8784dc-1993-11ee-be56-0242ac120002",
+            Input: JSON.stringify(inputHashtagEvent)
+          }
+        ]
+      };
+
+      const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
+      console.log("Regola creata con successo: ", ruleResponse.RuleArn);
+
+      const targetsResponse = await cwEventsClient.send(new PutTargetsCommand(putTargetsParams));
+      console.log("Destinazione assegnata correttamente: ", targetsResponse);
     })
   );
 };
-
-
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -239,7 +224,5 @@ run();
 //router hashtag
 app.use("/hashtags", hashtagRouter);
 
-
 //*ASCOLTA IL SERVER
 app.listen(PORT, HOST, () => console.log(`Server in esecuzione su ${HOST}:${PORT}`));
-

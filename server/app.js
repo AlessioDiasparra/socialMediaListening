@@ -8,22 +8,20 @@ import { db } from "./db/conn.js";
 //import { PostHashtag } from "../models/hashtagModel.js";
 import hashtagRouter from "../routes/hashtagRoutes.js";
 import * as dotenv from "dotenv";
-import AWS from "aws-sdk";
+/* import AWS from "aws-sdk";
 import {
   PutRuleCommand,
   PutTargetsCommand,
   CloudWatchEventsClient,
   DescribeRuleCommand
 } from "@aws-sdk/client-cloudwatch-events";
-/* import { StartExecutionCommand } from "@aws-sdk/client-sfn";
-import { SFNClient } from "@aws-sdk/client-sfn"; */
+
 import {
   SchedulerClient,
   UpdateScheduleCommand,
   CreateScheduleCommand
-} from "@aws-sdk/client-scheduler";
-import axios from "axios";
-import { URL } from "url";
+} from "@aws-sdk/client-scheduler"; */
+
 
 //configurazione variabili d'ambiente
 dotenv.config();
@@ -31,11 +29,11 @@ dotenv.config();
 const app = express();
 
 // TODO GET ALL ACQUISITIONS (TOKEN INIETTATO, SESSIONE)
-const axiosApiClient = axios.create({
+/*const axiosApiClient = axios.create({
   baseURL: process.env.SERVER_URL_ECO
 });
 
-axiosApiClient.interceptors.request.use(
+ axiosApiClient.interceptors.request.use(
   config => {
     let token = process.env.TOKEN_ECO;
     if (token) {
@@ -79,7 +77,7 @@ const updateScheduleParams = {
     Mode: "FLEXIBLE",
     MaximumWindowInMinutes: 15
   }
-};
+}; */
 
 //programma evento
 /* const putRuleParams = {
@@ -119,73 +117,6 @@ const putTargetsParams = {
 run();*/
 
 //crea uno scheduler per ogni acquisizione
-const run = async () => {
-  await Promise.all(
-    acquisitions.map(async a => {
-      const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;
-
-      const inputHashtagEvent = a?.hashTags.reduce((obj, item) => {
-        obj["acquisition_id"] = a.id;
-        obj[item] = item;
-        return obj;
-      }, {});
-
-      //crea pianificatore
-      const createScheduleParams = {
-        Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
-        ScheduleExpression: "rate(8 minutes)",
-        State: "ENABLED",
-        /* StartDate: new Date("TIMESTAMP"),
-            EndDate: new Date("TIMESTAMP"), */
-        //destinazione STEP FUNCTION
-        Target: {
-          Arn: process.env.arn_hashtagStateMachine,
-          RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
-          //input di hashtag da passare
-          Input: JSON.stringify(inputHashtagEvent)
-        },
-        FlexibleTimeWindow: {
-          // FlexibleTimeWindow
-          Mode: "FLEXIBLE",
-          MaximumWindowInMinutes: 15
-        }
-      };
-
-      console.log("Il pianificatore non esiste, creazione in corso...");
-      const schedulerResponse = await schedulerClient.send(
-        new CreateScheduleCommand(createScheduleParams)
-      );
-      console.log("Risposta pianificatore: ", schedulerResponse);
-
-      //modifica regola
-      const putRuleParams = {
-        Name: ruleName,
-        ScheduleExpression: "rate(2 minutes)",
-        State: "ENABLED"
-      };
-
-      //modifica destinazione
-      const putTargetsParams = {
-        Rule: ruleName,
-        Targets: [
-          {
-            Arn: process.env.arn_hashtagStateMachine,
-            RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
-            Id: "ac8784dc-1993-11ee-be56-0242ac120002",
-            Input: JSON.stringify(inputHashtagEvent)
-          }
-        ]
-      };
-
-      const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
-      console.log("Regola creata con successo: ", ruleResponse.RuleArn);
-
-      const targetsResponse = await cwEventsClient.send(new PutTargetsCommand(putTargetsParams));
-      console.log("Destinazione assegnata correttamente: ", targetsResponse);
-    })
-  );
-};
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // Abilita CORS
@@ -194,7 +125,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve i file statici dalla cartella build di React
-//app.use(express.static(join(__dirname, "../client/build")));
+app.use(express.static(join(__dirname, "../client/build")));
 
 const PORT = process.env.PORT || 3001; // Puoi modificare la porta se necessario
 const HOST = process.env.HOST || "localhost";
@@ -212,81 +143,16 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", async function (req, res) {
-  await Promise.all(
-    acquisitions.map(async a => {
-      const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;
-
-      const inputHashtagEvent = a?.hashTags.reduce((obj, item) => {
-        obj["acquisition_id"] = a.id;
-        obj[item] = item;
-        return obj;
-      }, {});
-
-      //crea pianificatore
-      const createScheduleParams = {
-        Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
-        ScheduleExpression: "rate(8 minutes)",
-        State: "ENABLED",
-        /* StartDate: new Date("TIMESTAMP"),
-              EndDate: new Date("TIMESTAMP"), */
-        //destinazione STEP FUNCTION
-        Target: {
-          Arn: process.env.arn_hashtagStateMachine,
-          RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
-          //input di hashtag da passare
-          Input: JSON.stringify(inputHashtagEvent)
-        },
-        FlexibleTimeWindow: {
-          // FlexibleTimeWindow
-          Mode: "FLEXIBLE",
-          MaximumWindowInMinutes: 15
-        }
-      };
-
-      console.log("Il pianificatore non esiste, creazione in corso...");
-      const schedulerResponse = await schedulerClient.send(
-        new CreateScheduleCommand(createScheduleParams)
-      );
-      console.log("Risposta pianificatore: ", schedulerResponse);
-
-      //modifica regola
-      const putRuleParams = {
-        Name: ruleName,
-        ScheduleExpression: "rate(2 minutes)",
-        State: "ENABLED"
-      };
-
-      //modifica destinazione
-      const putTargetsParams = {
-        Rule: ruleName,
-        Targets: [
-          {
-            Arn: process.env.arn_hashtagStateMachine,
-            RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
-            Id: "ac8784dc-1993-11ee-be56-0242ac120002",
-            Input: JSON.stringify(inputHashtagEvent)
-          }
-        ]
-      };
-
-      const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
-      console.log("Regola creata con successo: ", ruleResponse.RuleArn);
-
-      const targetsResponse = await cwEventsClient.send(new PutTargetsCommand(putTargetsParams));
-      console.log("Destinazione assegnata correttamente: ", targetsResponse);
-      res.json({ message: "scheduler in esecuzione" });
-    })
-  );
-});
-
-/* app.get("/api", (req, res) => {
-  res.json({ message: "Ciao dal  server! route api" });
-}); */
-
-
 //router hashtag
 app.use("/hashtags", hashtagRouter);
+
+app.get("/", async function (req, res) {
+  res.json({ message: "server in esecuzione" });
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(join(__dirname, "../client", "build", "index.html"));
+})
 
 //*ASCOLTA IL SERVER
 app.listen(PORT, HOST, () => console.log(`Server in esecuzione su ${HOST}:${PORT}`));

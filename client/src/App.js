@@ -34,6 +34,7 @@ export default function App() {
     }
     navigate("/page1");
   };
+
   //gestione logout
   const handleLogout = () => {
     window.localStorage?.removeItem("token");

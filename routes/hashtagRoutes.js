@@ -5,7 +5,7 @@ import {
   getPostsByAcquisitionId,
   getPostsFilterLikes,
   getPostsFilterLikesComments,
-  getPostsByAcquisitionIdFilterLikes
+  getPostsByAcquisitionIdFilterLikes,createScheduler
 } from "../controllers/hashtagController.js";
 
 const hashtagRouter = express.Router();
@@ -16,5 +16,6 @@ hashtagRouter.get("/:acquisition_id", getPostsByAcquisitionId);
 hashtagRouter.get("/:acquisition_id/:filter", getPostsByAcquisitionIdFilterLikes);
 hashtagRouter.get("/filter_likes/:filter", getPostsFilterLikes);
 hashtagRouter.get("/likes_comments", getPostsFilterLikesComments);
+hashtagRouter.post("/create_scheduler", createScheduler);
 
 export default hashtagRouter;

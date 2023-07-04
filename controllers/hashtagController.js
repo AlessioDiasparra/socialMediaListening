@@ -4,14 +4,9 @@ import * as dotenv from "dotenv";
 import {
   PutRuleCommand,
   PutTargetsCommand,
-  CloudWatchEventsClient,
-  DescribeRuleCommand
+  CloudWatchEventsClient
 } from "@aws-sdk/client-cloudwatch-events";
-import {
-  SchedulerClient,
-  UpdateScheduleCommand,
-  CreateScheduleCommand
-} from "@aws-sdk/client-scheduler";
+import { SchedulerClient, CreateScheduleCommand } from "@aws-sdk/client-scheduler";
 import axios from "axios";
 
 //configurazione variabili d'ambiente
@@ -41,8 +36,8 @@ const respAllAcquisitions = await axiosApiClient.get("/getall");
 const { data: acquisitions } = respAllAcquisitions;
 //credenziali aws
 AWS.config.update({
-  accessKeyId: process.env.aws_access_key_id,
-  secretAccessKey: process.env.aws_secret_access_key,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: "eu-north-1"
 });
 
@@ -102,7 +97,6 @@ export const getPostsFilterLikesComments = async (req, res) => {
   }
 };
 
-
 export const getPostsByAcquisitionIdFilterLikes = async (req, res) => {
   //filtri params
   const acquisitionId = req.params.acquisition_id;
@@ -110,7 +104,7 @@ export const getPostsByAcquisitionIdFilterLikes = async (req, res) => {
 
   try {
     // Assumendo che Post sia un modello Mongoose
-    const posts = await PostHashtag.find({acquisition_id: acquisitionId, likes: { $gt: filter }});
+    const posts = await PostHashtag.find({ acquisition_id: acquisitionId, likes: { $gt: filter } });
 
     res.status(200).send(posts);
   } catch (err) {
@@ -125,17 +119,17 @@ export const createScheduler = async (req, res) => {
     // Setta la Region AWS
     const cwEventsClient = new CloudWatchEventsClient({ region: REGION });
     const schedulerClient = new SchedulerClient({ region: REGION });
-   
+
     await Promise.all(
       acquisitions.map(async a => {
         const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;
-  
+
         const inputHashtagEvent = a?.hashTags.reduce((obj, item) => {
           obj["acquisition_id"] = a.id;
           obj[item] = item;
           return obj;
         }, {});
-  
+
         //crea pianificatore
         const createScheduleParams = {
           Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
@@ -145,8 +139,8 @@ export const createScheduler = async (req, res) => {
               EndDate: new Date("TIMESTAMP"), */
           //destinazione STEP FUNCTION
           Target: {
-            Arn: process.env.arn_hashtagStateMachine,
-            RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
+            Arn: process.env.ARN_HASHTAG_STATE_MACHINE,
+            RoleArn: process.env.ROLE_ARN_AMAZON_EVENTBRIDGE_SCHEDULER,
             //input di hashtag da passare
             Input: JSON.stringify(inputHashtagEvent)
           },
@@ -155,48 +149,45 @@ export const createScheduler = async (req, res) => {
             MaximumWindowInMinutes: 15
           }
         };
-  
+
         console.log("Il pianificatore non esiste, creazione in corso...");
         const schedulerResponse = await schedulerClient.send(
           new CreateScheduleCommand(createScheduleParams)
         );
-       
+
         //modifica regola
         const putRuleParams = {
           Name: ruleName,
           ScheduleExpression: "rate(2 minutes)",
           State: "ENABLED"
         };
-  
+
         //modifica destinazione
         const putTargetsParams = {
           Rule: ruleName,
           Targets: [
             {
-              Arn: process.env.arn_hashtagStateMachine,
-              RoleArn: process.env.role_arn_Amazon_EventBridge_Scheduler,
+              Arn: process.env.ARN_HASHTAG_STATE_MACHINE,
+              RoleArn: process.env.ROLE_ARN_AMAZON_EVENTBRIDGE_SCHEDULER,
               Id: "ac8784dc-1993-11ee-be56-0242ac120002",
               Input: JSON.stringify(inputHashtagEvent)
             }
           ]
         };
-  
+
         const ruleResponse = await cwEventsClient.send(new PutRuleCommand(putRuleParams));
         console.log("Regola creata con successo: ", ruleResponse.RuleArn);
-  
+
         const targetsResponse = await cwEventsClient.send(new PutTargetsCommand(putTargetsParams));
         console.log("Destinazione assegnata correttamente: ", targetsResponse);
-        
+
         console.log("Risposta pianificatore: ", schedulerResponse);
       })
-    ).then(()=>{
+    ).then(() => {
       res.status(200).send("scheduler creato con successo");
     });
-   
   } catch (error) {
     console.error(error);
-    res.status(500).send('Errore nella creazione dello scheduler');
+    res.status(500).send("Errore nella creazione dello scheduler");
   }
 };
-
-

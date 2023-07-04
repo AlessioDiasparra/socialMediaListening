@@ -9,7 +9,12 @@ steps:
       - "USERNAME=${USERNAME}"
       - "PASSWORD=${PASSWORD}"
       - "CLUSTER=${CLUSTER}"
-      - "DATABASE=${DATABASE}"
+      - "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
+      - "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
+      - "TOKEN_ECO=${TOKEN_ECO}"
+      - "ARN_HASHTAG_STATE_MACHINE=${ARN_HASHTAG_STATE_MACHINE}"
+      - "ROLE_ARN_AMAZON_EVENTBRIDGE_SCHEDULER=${ROLE_ARN_AMAZON_EVENTBRIDGE_SCHEDULER}"
+      - "SERVER_URL_ECO=${SERVER_URL_ECO}"
   - name: "gcr.io/cloud-builders/gcloud"
     args: ["app", "deploy"]
 timeout: "1600s"

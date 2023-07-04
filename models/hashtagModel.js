@@ -10,7 +10,8 @@ const PostHashtagSchema = new mongoose.Schema({
     comments: Number,
     description: String,
     timestamp: String,
-    link: String
+    link: String,
+    acquisition_id: String
 });
  
 const PostHashtag = mongoose.model('posts_searched_hashtags', PostHashtagSchema);

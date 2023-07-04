@@ -1,6 +1,4 @@
 import { PostHashtag } from "../models/hashtagModel.js";
-import fetchData from "../server/source/api/fetchData.js";
-import axios from "axios";
 
 export const getAllPosts = async (request, response) => {
   try {
@@ -57,27 +55,20 @@ export const getPostsFilterLikesComments = async (req, res) => {
 };
 
 
-export const startAcquisitions = async (req, res) => {
- /*  const HASHTAG_API_URL =
-      "https://p68xx6hws2.execute-api.eu-north-1.amazonaws.com/develop/instagram-hashtags";
-  const response = await axios.post(HASHTAG_API_URL, { [req.params.hashtag]: req.params.hashtag }) */
-  const data = await fetchData({ [req.params.hashtag]: req.params.hashtag });
-  if (data?.data) {
-    const { posts } = data?.data[req.params.hashtag];
-    try {
-      await Promise.all(posts.map(async (post) => {
-        const hashtagPost = new PostHashtag(post);
-        try {
-          await hashtagPost.save();
-        } catch (err) {
-          console.error(`Failed to save post: ${err}`);
-          // Gestisci l'errore come preferisci
-        }
-      }));
-      res.status(200).send('Post salvati con successo!');
-    } catch (err) {
-      res.status(500).send(err);
-    }
+export const getPostsByAcquisitionIdFilterLikes = async (req, res) => {
+  //filtri params
+  const acquisitionId = req.params.acquisition_id;
+  const filter = Number(req.params.filter);
+
+  try {
+    // Assumendo che Post sia un modello Mongoose
+    const posts = await PostHashtag.find({acquisition_id: acquisitionId, likes: { $gt: filter }});
+
+    res.status(200).send(posts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 

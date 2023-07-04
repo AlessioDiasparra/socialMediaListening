@@ -122,7 +122,6 @@ run();*/
 const run = async () => {
   await Promise.all(
     acquisitions.map(async a => {
-      console.log("a :>> ", a);
       const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;
 
       const inputHashtagEvent = a?.hashTags.reduce((obj, item) => {
@@ -239,10 +238,6 @@ app.get("/", async function (req, res) {
 //router hashtag
 app.use("/hashtags", hashtagRouter);
 
-// Rotta catch-all che restituisce il file index.html
-app.get("*", (req, res) => {
-  res.sendFile(join(__dirname, "../client", "build", "index.html"));
-});
 
 //*ASCOLTA IL SERVER
 app.listen(PORT, HOST, () => console.log(`Server in esecuzione su ${HOST}:${PORT}`));

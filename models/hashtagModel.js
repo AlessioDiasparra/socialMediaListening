@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 
-//campo da aggiungere  acquisition_id: String,
-
-// create an schema
 const PostHashtagSchema = new mongoose.Schema({
     id: String,
     media_type: String,

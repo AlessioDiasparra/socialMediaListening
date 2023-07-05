@@ -1,12 +1,8 @@
 import { PostHashtag } from "../models/hashtagModel.js";
 import AWS from "aws-sdk";
 import * as dotenv from "dotenv";
-import {
-  PutRuleCommand,
-  PutTargetsCommand,
-  CloudWatchEventsClient
-} from "@aws-sdk/client-cloudwatch-events";
-import { SchedulerClient, CreateScheduleCommand } from "@aws-sdk/client-scheduler";
+import { CloudWatchEventsClient, ListRulesCommand, PutRuleCommand, PutTargetsCommand } from "@aws-sdk/client-cloudwatch-events";
+import { SchedulerClient, CreateScheduleCommand } from "@aws-sdk/client-scheduler"; 
 import axios from "axios";
 
 //configurazione variabili d'ambiente
@@ -116,32 +112,60 @@ export const getPostsByAcquisitionIdFilterLikes = async (req, res) => {
 // API per creare uno scheduler
 export const createScheduler = async (req, res) => {
   try {
-    // Setta la Region AWS
     const cwEventsClient = new CloudWatchEventsClient({ region: REGION });
     const schedulerClient = new SchedulerClient({ region: REGION });
+
+    // Recupera regole esistenti
+    const existingRulesResponse = await cwEventsClient.send(new ListRulesCommand({}));
+    const existingRules = existingRulesResponse.Rules.map(rule => rule.Name);
 
     await Promise.all(
       acquisitions.map(async a => {
         const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;
+        const startDate = new Date(a?.start);
+        const endDate = new Date(a?.end);
+        const now = new Date();
 
+        // Verifica se la regola esiste già
+        if (existingRules.includes(ruleName) || startDate < now || endDate < now) {
+          console.log(`Scheduler "${ruleName}" esiste gia or datainizio/datafine sono passate.`);
+          return;
+        }
+
+         // Se la data fine si sta avvicinando chiama il mio endpoint
+         const secondsToEndDate = (endDate.getTime() - now.getTime()) / 1000;
+         if (secondsToEndDate <= 1) {
+           //aggiunge risultato all'endpoint di eco
+           const hashtags = await PostHashtag.find({ acquisition_id: a?.id });
+           if (hashtags) {
+             try {
+               const endpointResponse = await axiosApiClient.post("/addresult", {
+                 value: JSON.stringify(hashtags),
+                 acquisitionId: a?.id
+               });
+               console.log(`Called endpoint. Response: ${endpointResponse.data}`);
+             } catch (err) {
+               console.log(`Error calling endpoint: ${err}`);
+             }
+           }
+         }
+          
         const inputHashtagEvent = a?.hashTags.reduce((obj, item) => {
           obj["acquisition_id"] = a.id;
           obj[item] = item;
           return obj;
         }, {});
 
-        //crea pianificatore
+        // Create scheduler
         const createScheduleParams = {
-          Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
-          ScheduleExpression: "rate(6 hours)",
+          Name: ruleName,
+          ScheduleExpression: "rate(4 hours)", //ingestion ogni 4 ore
           State: "ENABLED",
           StartDate: new Date(a?.start),
           EndDate: new Date(a?.end),
-          //destinazione STEP FUNCTION
           Target: {
             Arn: process.env.ARN_HASHTAG_STATE_MACHINE,
             RoleArn: process.env.ROLE_ARN_AMAZON_EVENTBRIDGE_SCHEDULER,
-            //input di hashtag da passare
             Input: JSON.stringify(inputHashtagEvent)
           },
           FlexibleTimeWindow: {
@@ -150,19 +174,19 @@ export const createScheduler = async (req, res) => {
           }
         };
 
-        console.log("Il pianificatore non esiste, creazione in corso...");
+        console.log("Creazione nuovo scheduler...");
         const schedulerResponse = await schedulerClient.send(
           new CreateScheduleCommand(createScheduleParams)
         );
 
-        //modifica regola
+        // Modify rule
         const putRuleParams = {
           Name: ruleName,
           ScheduleExpression: "rate(50 minutes)",
           State: "ENABLED"
         };
 
-        //modifica destinazione
+        // Modify target
         const putTargetsParams = {
           Rule: ruleName,
           Targets: [
@@ -179,15 +203,15 @@ export const createScheduler = async (req, res) => {
         console.log("Regola creata con successo: ", ruleResponse.RuleArn);
 
         const targetsResponse = await cwEventsClient.send(new PutTargetsCommand(putTargetsParams));
-        console.log("Destinazione assegnata correttamente: ", targetsResponse);
+        console.log("Target assegnato con successo: ", targetsResponse);
 
-        console.log("Risposta pianificatore: ", schedulerResponse);
+        console.log("Scheduler response: ", schedulerResponse);
       })
     ).then(() => {
-      res.status(200).send("scheduler creato con successo");
+      res.status(200).send("Scheduler creato con successo");
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Errore nella creazione dello scheduler");
+    res.status(500).send("Error in creating the scheduler");
   }
 };

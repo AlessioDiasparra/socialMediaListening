@@ -23,7 +23,7 @@ export const saveNewAcquisition = async (request, response) => {
 
 export const getAcquisitionsById = async (req, res) => {
   try {
-    const acquisition = await Acquisition.find({ id: req.params.acquisition_id });
+    const acquisition = await Acquisition.find({ id: req.params.id });
     res.status(200).send(acquisition);
   } catch (err) {
     console.log(err);
@@ -33,7 +33,7 @@ export const getAcquisitionsById = async (req, res) => {
 
 export const updateAcquisition = async (request, response) => {
   try {
-    const acquisition = await Acquisition.updateOne({ id: request.params.acquisition_id }, request.body);
+    const acquisition = await Acquisition.updateOne({ id: request.params.id }, request.body);
     if (acquisition.nModified == 0) {
       response.status(404).send("No acquisition found to update");
     } else {
@@ -46,8 +46,8 @@ export const updateAcquisition = async (request, response) => {
 
 export const deleteAcquisitionById = async (req, res) => {
   try {
-    const acquisition = await Acquisition.deleteOne({ id: req.params.acquisition_id });
-    res.status(200).send(acquisition);
+    const acquisition = await Acquisition.deleteOne({ id: req.params.id });
+    res.status(200).send(`Eliminata acquisizione con id: ${acquisition.id}`);
   } catch (err) {
     console.log(err);
     res.status(500).send(err);

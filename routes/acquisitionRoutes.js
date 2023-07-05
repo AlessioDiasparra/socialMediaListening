@@ -7,8 +7,8 @@ const acquisitionRouter = express.Router();
 
 acquisitionRouter.get("/all", getAllAcquisitions);
 acquisitionRouter.post("/save", saveNewAcquisition);
-acquisitionRouter.get("/:acquisition_id", getAcquisitionsById);
-acquisitionRouter.put("/update/:acquisition_id", updateAcquisition);
-acquisitionRouter.delete("/:acquisition_id", deleteAcquisitionById);
+acquisitionRouter.get("/:id", getAcquisitionsById);
+acquisitionRouter.put("/update/:id", updateAcquisition);
+acquisitionRouter.delete("/:id", deleteAcquisitionById);
 
 export default acquisitionRouter;

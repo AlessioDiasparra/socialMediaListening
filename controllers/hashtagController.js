@@ -97,7 +97,9 @@ export const createScheduler = async (req, res) => {
     // Recupera regole esistenti
     const existingRulesResponse = await cwEventsClient.send(new ListRulesCommand({}));
     const existingRules = existingRulesResponse.Rules.map(rule => rule.Name);
+    //recupera acquisizioni a database
     const acquisitions = await Acquisition.find({});
+    //per ogni acquisizione crea uno scheduler
     await Promise.all(
       acquisitions.map(async a => {
         const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;

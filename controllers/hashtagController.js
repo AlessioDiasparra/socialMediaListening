@@ -112,18 +112,6 @@ export const createScheduler = async (req, res) => {
           console.log(`Scheduler "${ruleName}" esiste gia or datainizio/datafine sono passate.`);
           return;
         }
-
-         // Se la data fine si sta avvicinando chiama il mio endpoint
-         const secondsToEndDate = (endDate.getTime() - now.getTime()) / 1000;
-         if (secondsToEndDate <= 1) {
-           const hashtags = await PostHashtag.find({ acquisition_id: a?.id });
-           const resultData = JSON.stringify(hashtags);
-           //TODO MODIFICA ACQUISIZIONE A DATABASE
-           //aggiorna result con i risultati
-           if (hashtags?.length > 0) {
-            await Acquisition.updateOne({ id: a?.id }, { result: resultData });
-           }
-         }
           
         const inputHashtagEvent = a?.hashTags.reduce((obj, item) => {
           obj["acquisition_id"] = a.id;
@@ -188,5 +176,35 @@ export const createScheduler = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Error in creating the scheduler");
+  }
+};
+
+export const pushResults = async (req, res) => {
+  try {
+    const acquisitions = await Acquisition.find({});
+    //per ogni acquisizione crea uno scheduler
+    await Promise.all(
+      acquisitions.map(async a => {
+        const startDate = new Date(a?.start);
+        const endDate = new Date(a?.end);
+        const now = new Date();
+         // Se la data fine si sta avvicinando chiama il mio endpoint
+         const secondsToEndDate = (endDate.getTime() - now.getTime()) / 1000;
+         if (secondsToEndDate <= 1) {
+           const hashtags = await PostHashtag.find({ acquisition_id: a?.id });
+           const resultData = JSON.stringify(hashtags);
+           //TODO MODIFICA ACQUISIZIONE A DATABASE
+           //aggiorna result con i risultati
+           if (hashtags?.length > 0) {
+            await Acquisition.updateOne({ id: a?.id }, { result: resultData });
+           }
+         }
+      })
+    ).then(() => {
+      res.status(200).send("risultati inviati con successo!");
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("errore nei risultati");
   }
 };

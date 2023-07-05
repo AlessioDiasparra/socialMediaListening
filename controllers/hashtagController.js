@@ -1,35 +1,14 @@
 import { PostHashtag } from "../models/hashtagModel.js";
+import { Acquisition } from "../models/acquisitionModel.js";
 import AWS from "aws-sdk";
 import * as dotenv from "dotenv";
 import { CloudWatchEventsClient, ListRulesCommand, PutRuleCommand, PutTargetsCommand } from "@aws-sdk/client-cloudwatch-events";
 import { SchedulerClient, CreateScheduleCommand } from "@aws-sdk/client-scheduler"; 
-import axios from "axios";
+
 
 //configurazione variabili d'ambiente
 dotenv.config();
 
-const axiosApiClient = axios.create({
-  baseURL: process.env.SERVER_URL_ECO
-});
-
-axiosApiClient.interceptors.request.use(
-  config => {
-    let token = process.env.TOKEN_ECO;
-    if (token) {
-      config.headers["Authorization"] = "Bearer " + token;
-    }
-    return config;
-  },
-  error => {
-    if (error.response.status === 401) {
-      token = "";
-    }
-  }
-);
-
-const respAllAcquisitions = await axiosApiClient.get("/getall");
-// sintassi rinomina data + destructuring
-const { data: acquisitions } = respAllAcquisitions;
 //credenziali aws
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -118,7 +97,7 @@ export const createScheduler = async (req, res) => {
     // Recupera regole esistenti
     const existingRulesResponse = await cwEventsClient.send(new ListRulesCommand({}));
     const existingRules = existingRulesResponse.Rules.map(rule => rule.Name);
-
+    const acquisitions = await Acquisition.find({});
     await Promise.all(
       acquisitions.map(async a => {
         const ruleName = `rule_hashtags_${a.hashTags[0]}_${a.id}`;
@@ -137,16 +116,11 @@ export const createScheduler = async (req, res) => {
          if (secondsToEndDate <= 1) {
            //aggiunge risultato all'endpoint di eco
            const hashtags = await PostHashtag.find({ acquisition_id: a?.id });
-           if (hashtags) {
-             try {
-               const endpointResponse = await axiosApiClient.post("/addresult", {
-                 value: JSON.stringify(hashtags),
-                 acquisitionId: a?.id
-               });
-               console.log(`Called endpoint. Response: ${endpointResponse.data}`);
-             } catch (err) {
-               console.log(`Error calling endpoint: ${err}`);
-             }
+           const resultData = JSON.stringify(hashtags);
+           //TODO MODIFICA ACQUISIZIONE A DATABASE
+           //aggiorna result con i risultati
+           if (hashtags?.length > 0) {
+            await Acquisition.updateOne({ id: a?.id }, { result: resultData });
            }
          }
           

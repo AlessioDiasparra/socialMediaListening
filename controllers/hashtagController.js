@@ -196,7 +196,7 @@ export const pushResults = async (req, res) => {
            //TODO MODIFICA ACQUISIZIONE A DATABASE
            //aggiorna result con i risultati
            if (hashtags?.length > 0) {
-            await Acquisition.updateOne({ _id: _a?.id }, { result: resultData });
+            await Acquisition.updateOne({ _id: a?._id }, { result: resultData });
            }
          }
       })

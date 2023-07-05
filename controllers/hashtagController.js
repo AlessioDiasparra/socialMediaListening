@@ -134,7 +134,7 @@ export const createScheduler = async (req, res) => {
         // Create scheduler
         const createScheduleParams = {
           Name: ruleName,
-          ScheduleExpression: "rate(4 hours)", //ingestion ogni 4 ore
+          ScheduleExpression: "rate(4 minutes)", //ingestion ogni 4 ore
           State: "ENABLED",
           StartDate: new Date(a?.start),
           EndDate: new Date(a?.end),

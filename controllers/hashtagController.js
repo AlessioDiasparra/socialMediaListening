@@ -133,7 +133,7 @@ export const createScheduler = async (req, res) => {
           },
           FlexibleTimeWindow: {
             Mode: "FLEXIBLE",
-            MaximumWindowInMinutes: 15
+            MaximumWindowInMinutes: 5
           }
         };
 
@@ -145,7 +145,7 @@ export const createScheduler = async (req, res) => {
         // Modify rule
         const putRuleParams = {
           Name: ruleName,
-          ScheduleExpression: "rate(50 minutes)",
+          ScheduleExpression: "rate(5 minutes)",
           State: "ENABLED"
         };
 

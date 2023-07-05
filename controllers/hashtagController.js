@@ -124,8 +124,8 @@ export const createScheduler = async (req, res) => {
           Name: ruleName,
           ScheduleExpression: "rate(3 minutes)", //ingestion ogni 4 ore
           State: "ENABLED",
-          StartDate: new Date(a?.start),
-          EndDate: new Date(a?.end),
+         /*  StartDate: new Date(a?.start),
+          EndDate: new Date(a?.end), */
           Target: {
             Arn: process.env.ARN_HASHTAG_STATE_MACHINE,
             RoleArn: process.env.ROLE_ARN_AMAZON_EVENTBRIDGE_SCHEDULER,

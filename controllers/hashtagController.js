@@ -114,7 +114,6 @@ export const createScheduler = async (req, res) => {
          // Se la data fine si sta avvicinando chiama il mio endpoint
          const secondsToEndDate = (endDate.getTime() - now.getTime()) / 1000;
          if (secondsToEndDate <= 1) {
-           //aggiunge risultato all'endpoint di eco
            const hashtags = await PostHashtag.find({ acquisition_id: a?.id });
            const resultData = JSON.stringify(hashtags);
            //TODO MODIFICA ACQUISIZIONE A DATABASE

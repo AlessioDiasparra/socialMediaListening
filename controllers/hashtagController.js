@@ -192,11 +192,11 @@ export const pushResults = async (req, res) => {
          const secondsToEndDate = (endDate.getTime() - now.getTime()) / 1000;
          //if (secondsToEndDate <= 1) {
            const hashtags = await PostHashtag.find({ acquisition_id: a?.id });
-           const resultData = JSON.stringify(hashtags);
-           //TODO MODIFICA ACQUISIZIONE A DATABASE
-           //aggiorna result con i risultati
            if (hashtags?.length > 0) {
-            await Acquisition.updateOne({ _id: a?._id }, { result: resultData });
+            const resultData = JSON.stringify(hashtags);
+            //TODO MODIFICA ACQUISIZIONE A DATABASE
+            //aggiorna result con i risultati
+              await Acquisition.updateOne({ _id: a?._id }, { result: resultData });
            }
          //}
       })

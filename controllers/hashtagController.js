@@ -135,8 +135,8 @@ export const createScheduler = async (req, res) => {
           Name: `rule_hashtags_${a.hashTags[0]}_${a.id}`,
           ScheduleExpression: "rate(6 hours)",
           State: "ENABLED",
-          /* StartDate: new Date("TIMESTAMP"),
-              EndDate: new Date("TIMESTAMP"), */
+          StartDate: new Date(a?.start),
+          EndDate: new Date(a?.end),
           //destinazione STEP FUNCTION
           Target: {
             Arn: process.env.ARN_HASHTAG_STATE_MACHINE,
